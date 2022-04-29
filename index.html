@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        @keyframes logoEntrance {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+
+            100% {
+                width: 350px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes textEntrance {
+            0% {
+                opacity: 0;
+                font-size: 0;
+            }
+
+            100% {
+                opacity: 1;
+                font-size: 32px;
+
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: aliceblue;
+        }
+
+        #canvas1 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(#000000ec, #000000c4), url('img/bg.jpeg');
+
+        }
+
+        .mainContainer {
+            z-index: 2;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .mainContainer .logo {
+            animation-name: logoEntrance;
+            animation-duration: 4s;
+            width: 350px;
+        }
+
+        .mainContainer h1 {
+            animation-name: textEntrance;
+            animation-duration: 4s;
+            text-shadow: 2px 5px 13px #bfd4e1;
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+
+    <canvas id="canvas1" style="z-index:1"></canvas>
+
+    <div class="mainContainer">
+
+        <img class="logo" src="img/logo.png" alt="">
+        <h1> Our Mission is to Make your Business Better Through Technology </h1>
+    </div>
+
+
+
+
+    <script>
+
+        const canvas = document.getElementById("canvas1");
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray;
+
+        const img1 = new Image();
+        img1.src = 'img/1.png';
+
+        const img2 = new Image();
+        img2.src = 'img/2.png';
+
+        const img3 = new Image();
+        img3.src = 'img/3.png';
+
+        const img4 = new Image();
+        img4.src = 'img/4.png';
+
+        const img5 = new Image();
+        img5.src = 'img/5.png';
+
+        // get mouse position
+        let mouse = {
+            x: null,
+            y: null,
+            radius: (canvas.height / 100) * (canvas.width / 100)
+        }
+
+        let logo = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 100
+        }
+
+        window.addEventListener('mousemove',
+            function (event) {
+                mouse.x = event.x;
+                mouse.y = event.y;
+            }
+        );
+
+
+
+        //create particle
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color, mode) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX * 0.2;
+                this.directionY = directionY * 0.2;
+                this.size = size;
+                this.color = color;
+                this.mode = mode;
+            }
+            // method to draw individual particle
+            draw() {
+                switch (this.mode) {
+                    case 1:
+                        ctx.drawImage(img1, this.x, this.y, this.size, this.size);
+                        break;
+                    case 2:
+                        ctx.drawImage(img2, this.x, this.y, this.size, this.size);
+                        break;
+                    case 3:
+                        ctx.drawImage(img3, this.x, this.y, this.size, this.size);
+                        break;
+                    case 4:
+                        ctx.drawImage(img4, this.x, this.y, this.size, this.size);
+                        break;
+                    case 5:
+                        ctx.drawImage(img5, this.x, this.y, this.size, this.size);
+                        break;
+                    default:
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                        ctx.fillStyle = '#8EC3E6';
+                        ctx.fill();
+
+                }
+
+
+
+
+            }
+            // check particle position, check mouse position, move the particle, draw the particle
+            update() {
+                //check if particle is still winthin canvas
+                if (this.x > canvas.width || this.x < 0) {
+                    this.directionX = -this.directionX;
+
+                }
+                if (this.y > canvas.height || this.y < 0) {
+                    this.directionY = -this.directionY;
+
+                }
+
+
+                //check collision detection - mouse position / particle position
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius + this.size) {
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+                        this.x += 10;
+                    }
+                    if (mouse.x > this.x && this.x > this.size * 10) {
+                        this.x -= 10;
+                    }
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+                        this.y += 10;
+                    }
+                    if (mouse.y > this.y && this.y > this.size * 10) {
+                        this.y -= 10;
+
+                    }
+
+                }
+
+
+                //check collision with logo
+                let logodx = logo.x - this.x;
+                let logody = logo.y - this.y;
+                let distanceFromLogo = Math.sqrt(logodx * logodx + logody * logody);
+                if (distanceFromLogo <= logo.radius + this.size) {
+                    this.directionX = -this.directionX;
+                    this.directionY = -this.directionY;
+
+                }
+
+                //move particle
+                this.x += this.directionX;
+                this.y += this.directionY;
+                // draw particle
+                this.draw();
+
+            }
+
+        }
+
+
+        // create particle array
+        function init() {
+            particlesArray = [];
+            let numberofParticles = (canvas.height * canvas.width) / 5000;
+            for (let i = 0; i < numberofParticles; i++) {
+
+                var x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+
+                if ((x > logo.x - logo.radius) && (x < logo.x + logo.radius)) {
+
+                    Math.random() > 0.5 ? (x = x - 2 * logo.radius) : (x = x + 2 * logo.radius);
+                }
+
+                var y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+
+                if ((y > logo.y - logo.radius) && (y < logo.y + logo.radius)) {
+
+                    Math.random() > 0.5 ? (y = y - 2 * logo.radius) : (y = y + 2 * logo.radius);
+                }
+
+                let directionX = (Math.random() * 5) - 2.5;
+                let directionY = (Math.random() * 5) - 2.5;
+                let color = '#8C5523';
+                var mode = Math.floor(Math.random() * 15) + 1;
+
+
+                if (mode < 6) {
+                    var size = (Math.random() * 50) + 1;
+                } else {
+                    var size = (Math.random() * 5) + 1;
+                }
+
+
+
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color, mode));
+            }
+        }
+
+        //check if particles are close enough to draw line between them
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                        opacityValue = 0.8 - (distance / 20000);
+                        ctx.strokeStyle = 'rgba(142, 195, 230,' + opacityValue + ')';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        //resize event 
+        window.addEventListener('resize',
+            function () {
+                canvas.width = innerWidth;
+                canvas.height = innerHeight;
+                mouse.radius = ((canvas.height / 100) * (canvas.height / 100));
+                init();
+            }
+        );
+
+        window.addEventListener('mouseout',
+            function () {
+                mouse.x = undefined;
+                mouse.y = undefined;
+            }
+
+        );
+
+
+
+
+        init();
+        animate();
+
+    </script>
+</body>
+
+</html>
